@@ -1,0 +1,60 @@
+# Conversations to replay against the REAL model + REAL API:  python chat_cli.py --script scenarios.txt
+# One message per line; "---" starts a new conversation. Lines starting with # are comments.
+# Check for each: no tool call on small talk; only relevant products; context kept across lines; a missing brand is
+# reported honestly; "show me" gives cards while "what do you have" is answered in words; no invented prices;
+# nothing technical ever shown; and the "⚙" trace shows 1-2 LLM-driven rounds, not a chain.
+
+# --- the conversation from real testing (phones) ---
+عامل ايه؟
+بص أنا عايز موبايل كويس
+إيه الموبايلات اللي عندكو؟
+طب سامسونج؟
+طيب شاومي؟
+وريني الشاومي
+طب أنهي واحد أحسن؟
+طب في حاجة أرخص؟
+التاني ده كويس؟
+خلاص سيبك من الموبايلات وريني تيشيرتات
+فيه أسود؟
+لا قصدي عايز لبن 😂
+---
+# --- ambiguous / corrected Arabic ---
+طيب في البان ايه
+لا اقصد عايز لبن
+طب عندك نوع تاني؟
+طب الأرخص؟
+عايز حاجة أحسن
+---
+# --- general question vs show request ---
+إيه الموبايلات اللي عندكو؟
+عندكو شاومي؟
+وريني الموبايلات
+وريني سامسونج
+---
+عايز هدية لأخويا
+20 سنة و1000 جنيه
+طب حاجة تانية؟
+---
+عايز موبايل
+معايا 15 ألف
+ويكون آيفون
+وريني الأحسن
+إيه الفرق بين دول؟
+المنتج ده فيه فيديو؟
+---
+محتاج حاجة للجامعة
+شنطة لو فيه
+---
+show me something for my girlfriend's birthday
+around 800 EGP
+---
+عندكم عروض؟
+إيه الجديد عندكم؟
+---
+ملابس شبابي
+عايز غسالة اوتوماتيك
+عندكم سيارات؟
+اتكلم معايا عن الطقس
+---
+شامبو لوريال تحت 300 جنيه
+طب اللي ريحته حلوة
