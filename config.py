@@ -54,7 +54,6 @@ LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.2"))
 LLM_MAX_TOKENS = int(os.getenv("LLM_MAX_TOKENS", "1200"))  # reasoning models spend part of this on hidden reasoning
 REASONING_EFFORT = os.getenv("REASONING_EFFORT", "low")  # only sent to gpt-oss models
 
-
 def get_groq_key() -> str:
     key = os.getenv("GROQ_API_KEY", "").strip()
     if key:
