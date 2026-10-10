@@ -56,7 +56,15 @@ REASONING_EFFORT = os.getenv("REASONING_EFFORT", "low")  # only sent to gpt-oss 
 
 
 def get_groq_key() -> str:
-    return os.getenv("GROQ_API_KEY", "").strip()
+    key = os.getenv("GROQ_API_KEY", "").strip()
+    if key:
+        return key
+
+    try:
+        import streamlit as st
+        return str(st.secrets.get("GROQ_API_KEY", "")).strip()
+    except Exception:
+        return ""
 
 
 # ---- Guards --------------------------------------------------------------
