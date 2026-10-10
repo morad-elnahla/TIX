@@ -42,39 +42,38 @@ def build_css(side: str = "right") -> str:
 _mobile_build_css = build_css
 
 
-# Chat polish: WhatsApp-style sides (RTL: assistant on the right in grey, customer on the left in black) and compact quick actions.
+# Chat polish: customer right, assistant left; equal stacked starter actions.
 CHAT_POLISH_CSS = """
-/* ---- message sides ---- */
-.st-key-chat_panel .row { display:flex !important; direction:rtl !important; align-items:flex-end !important; gap:8px !important; margin:2px 0 !important; }
+:root { --tix-agent-bubble:#f0f1f4; --tix-customer-bubble:#111111; --tix-customer-text:#ffffff; --tix-focus-line:#d9dce2; --tix-action-hover:#f6f7f9; --tix-action-shadow:0 3px 10px rgba(17,17,17,.045); }
+/* Physical message sides are independent of the Arabic text direction. */
+.st-key-chat_panel .row { display:flex !important; direction:rtl !important; align-items:flex-end !important; gap:10px !important; margin:8px 0 !important; width:100% !important; }
 .st-key-chat_panel div:has(> .row) { margin-bottom:0 !important; }
-.st-key-chat_panel .row.a { justify-content:flex-start !important; }
-.st-key-chat_panel .row.u { justify-content:flex-end !important; }
-.st-key-chat_panel .row.a .av { order:-1 !important; }
-.st-key-chat_panel .row.u .av { order:2 !important; }
+.st-key-chat_panel .row.a { justify-content:flex-end !important; }
+.st-key-chat_panel .row.u { justify-content:flex-start !important; }
+.st-key-chat_panel .row.a .av { order:2 !important; }
+.st-key-chat_panel .row.u .av { order:-1 !important; }
 .st-key-chat_panel .row .av { flex:0 0 30px !important; width:30px !important; height:30px !important; }
 .st-key-chat_panel .row .av.a::after { font-size:9px !important; }
 .st-key-chat_panel .row .av.lg { flex-basis:36px !important; width:36px !important; height:36px !important; }
-.st-key-chat_panel .row .bubble { max-width:78% !important; padding:9px 14px !important; font-size:14.5px !important; line-height:1.7 !important; border-radius:20px !important; box-shadow:none !important; }
-.st-key-chat_panel .row.a .bubble.a { background:#f0f1f4 !important; color:#111111 !important; text-align:right; border-bottom-right-radius:6px !important; }
-.st-key-chat_panel .row.u .bubble.u { background:#111111 !important; color:#ffffff !important; border-bottom-left-radius:6px !important; }
-.st-key-chat_panel .row.a .bubble.welcome { flex:0 1 auto !important; max-width:82% !important; padding:12px 16px !important; }
+.st-key-chat_panel .row .bubble { flex:0 1 auto !important; width:fit-content !important; min-width:0 !important; padding:10px 14px !important; font-size:14.5px !important; line-height:1.7 !important; border-radius:20px !important; box-shadow:none !important; direction:rtl !important; text-align:right !important; overflow-wrap:anywhere; }
+.st-key-chat_panel .row.a .bubble.a { max-width:82% !important; background:var(--tix-agent-bubble) !important; color:var(--ink) !important; border-bottom-left-radius:6px !important; }
+.st-key-chat_panel .row.u .bubble.u { max-width:72% !important; background:var(--tix-customer-bubble) !important; color:var(--tix-customer-text) !important; border-bottom-right-radius:6px !important; }
+.st-key-chat_panel .row.a .bubble.welcome { max-width:82% !important; padding:12px 16px !important; }
 .st-key-chat_panel .bubble.welcome .w1, .st-key-chat_panel .bubble.welcome .w2 { font-size:16px !important; line-height:1.6 !important; }
 .st-key-chat_panel .bubble.welcome .w3 { font-size:12.5px !important; margin-top:4px !important; }
-
-/* calm focus ring on the message box */
-.st-key-chat_composer [data-testid="stChatInput"] div, .st-key-chat_composer [data-testid="stChatInput"] div:focus-within { border-color:#d9dce2 !important; box-shadow:none !important; }
-
-/* ---- compact quick actions (2x2 pills) ---- */
+.st-key-chat_composer [data-testid="stChatInput"] div, .st-key-chat_composer [data-testid="stChatInput"] div:focus-within { border-color:var(--tix-focus-line) !important; box-shadow:none !important; }
+/* Four equal-sized rows, on mobile and desktop alike. */
 .st-key-chat_chips { margin-top:6px !important; }
-.st-key-chat_chips, .st-key-chat_chips [data-testid="stVerticalBlock"] { display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:8px !important; direction:rtl !important; }
-.st-key-chat_chips [data-testid="stElementContainer"], .st-key-chat_chips .stButton { width:100% !important; margin:0 !important; }
-.st-key-chat_chips button { width:100% !important; height:auto !important; min-height:42px !important; padding:6px 10px !important; gap:8px !important;
-  border-radius:999px !important; border:1px solid #e8e9ee !important; background:#ffffff !important; box-shadow:none !important; transform:none !important;
+.st-key-chat_chips, .st-key-chat_chips [data-testid="stVerticalBlock"] { display:grid !important; grid-template-columns:minmax(0,1fr) !important; gap:10px !important; direction:rtl !important; }
+.st-key-chat_chips [data-testid="stElementContainer"], .st-key-chat_chips .stButton { width:100% !important; min-width:0 !important; margin:0 !important; }
+.st-key-chat_chips button { width:100% !important; height:54px !important; min-height:54px !important; padding:0 14px !important; gap:12px !important;
+  border-radius:14px !important; border:1px solid var(--line) !important; background:var(--surface) !important; box-shadow:var(--tix-action-shadow) !important; transform:none !important;
   display:flex !important; align-items:center !important; justify-content:flex-start !important; direction:rtl !important; transition:background .15s ease, border-color .15s ease !important; }
-.st-key-chat_chips button:hover, .st-key-chat_chips button:active { background:#f6f7f9 !important; border-color:#d9dce2 !important; }
-.st-key-chat_chips button::before { flex:0 0 26px !important; width:26px !important; height:26px !important; background-size:14px !important; }
+.st-key-chat_chips button:hover, .st-key-chat_chips button:active { background:var(--tix-action-hover) !important; border-color:var(--tix-focus-line) !important; }
+.st-key-chat_chips button::before { flex:0 0 30px !important; width:30px !important; height:30px !important; background-size:16px !important; }
 .st-key-chat_chips button::after { display:none !important; }
-.st-key-chat_chips button p { font-size:13px !important; font-weight:500 !important; line-height:1.3 !important; white-space:nowrap !important; overflow:hidden; text-overflow:ellipsis; text-align:right !important; margin:0 !important; }
+.st-key-chat_chips button p { font-size:14px !important; font-weight:500 !important; line-height:1.4 !important; white-space:nowrap !important; overflow:hidden; text-overflow:ellipsis; text-align:right !important; margin:0 !important; }
+@media (prefers-reduced-motion:reduce) { .st-key-chat_chips button { transition:none !important; } }
 """
 
 
