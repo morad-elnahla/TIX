@@ -98,10 +98,11 @@ def render_chat(agent) -> None:
     with st.container(key="chat_panel"):
         st.markdown(styles.header_html(), unsafe_allow_html=True)
         st.button(":material/edit_square:", key="new_chat", help="محادثة جديدة", on_click=_new_conversation)
-        msgs = st.container(height=450, key="chat_msgs", border=False)
+        msgs = st.container(key="chat_msgs", border=False)
         if isinstance(agent.llm, UnavailableLLM):
             st.caption("⚠️ GROQ_API_KEY غير مضبوط — الشات شغّال بالوضع المحدود.")
-        typed = st.chat_input("اسأل عن أي منتج، عروض، أو تفاصيل...", key="chat_in")
+        with st.container(key="chat_composer"):
+            typed = st.chat_input("اسأل عن أي منتج، عروض، أو تفاصيل...", key="chat_in")
         prompt = typed or queued
 
     with msgs:
