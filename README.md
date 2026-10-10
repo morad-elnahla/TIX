@@ -1,109 +1,204 @@
-# TIX shopping assistant (v6.3)
+<div align="center">
 
-A conversational sales assistant for the TIX online store. The customer just talks (Egyptian Arabic, English or a mix);
-the LLM understands, decides when to look something up, and the **TIX API is the only source of product facts**.
+<br>
+
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Syne&weight=750&size=36&pause=1000&color=AD6434&center=true&vCenter=true&width=800&lines=TIX+Sales+Agent+%F0%9F%9B%8D%EF%B8%8F;Egyptian-Arabic+Shopping+Assistant;LangGraph+%C2%B7+Live+API+%C2%B7+Hybrid+Retrieval)](https://tix0sales0agent.streamlit.app/)
+
+<br>
+
+[![Python](https://img.shields.io/badge/Python-3.10+-AD6434?style=for-the-badge&logo=python&logoColor=white&labelColor=1e2327)](https://python.org)
+[![Streamlit](https://img.shields.io/badge/Streamlit-Live-AD6434?style=for-the-badge&logo=streamlit&logoColor=white&labelColor=1e2327)](https://tix0sales0agent.streamlit.app/)
+[![LangGraph](https://img.shields.io/badge/LangGraph-Orchestration-AD6434?style=for-the-badge&labelColor=1e2327)](https://github.com/langchain-ai/langgraph)
+[![Groq](https://img.shields.io/badge/Groq-LLM-AD6434?style=for-the-badge&logo=groq&logoColor=white&labelColor=1e2327)](https://groq.com)
+[![TIX API](https://img.shields.io/badge/TIX_API-Live_Catalog-AD6434?style=for-the-badge&labelColor=1e2327)](#-how-it-works)
+
+<br>
+
+> **Tell it your budget and what you need. Get 2–3 real products from the live TIX catalog — in Egyptian Arabic.**
+
+> **No hardcoded products. No made-up prices. Every answer comes from the TIX API.**
+
+<br>
+
+| 🕸️ Orchestration | ⚡ LLM | 🛒 Source of Truth | 🔎 Retrieval | 🗣️ Language | 🖥️ UI |
+|:-----------------:|:------:|:------------------:|:------------:|:-----------:|:-----:|
+| **LangGraph** | **Groq** (model configurable) | **TIX API (live)** | **Hybrid: embeddings + taxonomy routing + LLM judge** | **Egyptian Arabic · Arabic/English mix** | **Streamlit** |
+
+<br>
+
+### [🚀 Try the Live App →](https://tix0sales0agent.streamlit.app/)
+
+</div>
+
+---
+
+## ✦ App Preview
+
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <img src="photo/1.png" width="100%" alt="TIX Sales Agent — screenshot 1">
+    </td>
+    <td width="50%" align="center">
+      <img src="photo/2.png" width="100%" alt="TIX Sales Agent — screenshot 2">
+    </td>
+  </tr>
+</table>
+
+---
+
+## ✦ What is This?
+
+Shopping on a big catalog usually means scrolling, filtering, and guessing keywords. **TIX Sales Agent** replaces that with a conversation.
+
+A customer types the way they actually talk — *"ميزانيتي 300 جنيه وعايز حاجة للشعر"* — and the agent figures out what they need, finds matching products in the **live TIX catalog**, and recommends the best two or three with the real price and discount, like a good sales assistant would.
+
+The LLM is the **conversational brain**. The TIX API is the **only source of truth**. The agent never recommends a product, price, or brand that didn't come back from the API, and it remembers the conversation, so follow-ups like *"غالي أوي، في أرخص؟"* just work.
+
+---
+
+## ✦ Example
+
+> *Illustrative conversation — real answers always depend on the live catalog at that moment.*
 
 ```
-customer message
-   -> LLM (Groq) sees: recent chat + what is on screen + last search
-        -> [ tool call -> real TIX data -> LLM ]*       (0 calls for small talk)
-   -> short natural reply, optionally ending with [[show: id, id]]  -> product cards (image / price / link / video)
+Customer : ميزانيتي 300 جنيه وعايز حاجة للشعر
+Agent    : شامبو نيزورال 2% المضاد للقشرة – 80 جنيه – مضاد قشرة
+           شامبو Eva بالألوفيرا وزيت الأرجان – 80 جنيه – ترطيب
+           تحب تشتري أي واحد منهم ولا محتاج حاجة تانية؟ 😊
+
+Customer : عايز نستله
+Agent    : للأسف مفيش منتجات نستله دلوقتي عندنا، تحب أدورلك على حاجة تانية؟
 ```
 
-A product request normally costs **2 LLM calls** (search, then the reply that also says which products to display); small talk costs 1.
+---
 
-## Run
+## ✦ How It Works
+
+| Step | What Happens |
+|:-----|:-------------|
+| **1. Understand** | The LLM reads the message together with the conversation so far — budget, preferences, and what was already shown |
+| **2. Route** | The need is mapped onto the **live** category / subcategory tree fetched from the API — no hardcoded synonyms or product mappings |
+| **3. Retrieve** | Hybrid retrieval over the live catalog: API search & filters combined with embeddings |
+| **4. Judge** | An LLM judge drops results that don't actually fit the request (keyword search alone is noisy) |
+| **5. Answer** | A short, natural reply in Egyptian Arabic: 2–3 picks, real price after discount, one clear next step |
+
+---
+
+## ✦ Design Principles
+
+| Principle | What it means |
+|:----------|:--------------|
+| 🧠 **LLM as the brain** | Understanding, context, and tone come from the model, not from rule tables |
+| 🛒 **API as the truth** | Prices, discounts, stock, and categories are always read live, so new products appear without any change |
+| 🚫 **Never hallucinate** | If it isn't in an API result, the agent doesn't say it |
+| 💬 **Remembers context** | Multi-turn conversation; follow-ups refer back to earlier turns |
+| 🌍 **Arabic-first, mixed-language friendly** | Handles Egyptian Arabic, English brand names, and both in one sentence |
+| 🧩 **Simple & maintainable** | Small modules, no over-engineered graph nodes |
+
+---
+
+## ✦ Project Structure
+
+```
+TIX/
+├── app.py                  ← Streamlit entry point
+├── chat_cli.py             ← Talk to the agent from the terminal
+├── config.py               ← Settings: model, API base URL, limits
+├── requirements.txt
+├── pytest.ini
+├── scenarios.txt           ← Conversation scenarios for manual checks
+│
+├── agent/                  ← Agent logic (LangGraph pipeline, prompts)
+├── tix/                    ← TIX API layer (live catalog access)
+├── ui/                     ← Streamlit interface components
+├── tests/                  ← Automated tests
+├── docs/                   ← Documentation
+├── photo/                  ← README screenshots
+└── .streamlit/             ← Streamlit configuration
+```
+
+---
+
+## ✦ Quick Start
 
 ```bash
+# 1. Clone the repo
+git clone https://github.com/morad-elnahla/TIX.git
+cd TIX
+
+# 2. Create a virtual environment
+python -m venv venv
+source venv/bin/activate      # Windows: venv\Scripts\activate
+
+# 3. Install dependencies
 pip install -r requirements.txt
-cp .env.example .env          # put your GROQ_API_KEY in .env (never commit it)
-streamlit run app.py          # the assistant IS the main page (centred chat card)
-python chat_cli.py            # same agent in the terminal, with a trace of every tool call
-python chat_cli.py --script scenarios.txt   # replay realistic multi-turn conversations against the real model + API
-python chat_cli.py --catalog-check "Redmi A5"   # is a product in the cache? in live search? in its live category listing?
-python chat_cli.py --check-llm   # which configured Groq models exist for your key + do they answer / call tools
-python -m pytest              # offline tests (fake TIX API, scripted model, simulated Groq errors)
-TIX_LIVE=1 pytest tests/test_live_smoke.py -v -s   # live API (+ real model if GROQ_API_KEY is set)
 ```
 
-## Layout
+Create a `.env` file in the project root:
 
-| Path | Role |
-|---|---|
-| `agent/agent.py` | The whole agent: one tool-calling loop, reply validation, price check, failure fallbacks |
-| `agent/prompts.py` | The single system prompt + the compact "what's on screen" context |
-| `agent/tools.py` | 4 tools: `search_products`, `get_product_details`, `compare_products`, `list_categories` |
-| `agent/llm.py` | Groq client: 429 cooldowns (Retry-After), dead-model memory, empty-reasoning / `tool_use_failed` handling |
-| `agent/guards.py` | Budget, brand, test products, dedupe, price check, reply validation, `[[show]]` parsing |
-| `agent/state.py`, `agent/render.py` | Session data; product-card dict + fixed failure messages |
-| `tix/` | `client.py` (HTTP), `schemas.py` (tolerant parsing incl. media), `catalog.py` (cached catalogue + word matching) |
-| `ui/`, `app.py` | Streamlit main-page UI: symmetric header, greeting, 2x2 quick-action grid, pill composer (no attachments); product cards with image / video link |
-| `docs/api_notes.md` | What is VERIFIED vs assumed about the API |
+| Key | Where to get it | Free tier? |
+|:----|:----------------|:----------:|
+| `GROQ_API_KEY` | <https://console.groq.com> | ✅ |
 
-## How it understands a conversation
+```bash
+# 4. Run the web app
+streamlit run app.py
 
-* **One brain.** The same model that chats decides whether a lookup is needed. "إزيك؟" costs one LLM call and zero API calls.
-* **Memory.** The last 14 chat messages are sent each turn, plus a tiny block listing the products currently on screen (id, name, price,
-  category) and the last search filters. "Cheaper", "the second one", "another kind" resolve against that, never from scratch.
-* **Understand first, search second.** The model writes 1-4 *phrasings* for the store (e.g. لبن → حليب / لبن / milk), so there is
-  no synonym table: language knowledge stays in the model, matching stays dumb and fast.
-* **Meaning, not keywords.** Every result carries its category path, and each search also returns *which categories the matches fall in*.
-  "OGX Coconut Milk Shampoo" shows up under `العناية بالشعر > شامبو`, the real milk under `ألبان وأجبان > حليب`; the model picks the right
-  one (or re-searches with `category=`). The look-alike cannot crowd out the real product, because results are interleaved across categories.
-* **Missing information → one useful question** ("عنده كام سنة وميزانيتك كام؟"), not a random search.
+# …or chat in the terminal
+python chat_cli.py
+```
 
-## How facts stay real
+App opens at `http://localhost:8501`.
 
-* Cards are produced only from the `[[show: ids]]` line, and only for **ids that a tool returned in this conversation**; the marker is
-  stripped from the text. Unknown ids are ignored.
-* Budget, brand and test-product filters are enforced in code. When a budget or brand excludes everything, the tool reports what really exists
-  (price range, brands present, what the category holds) so the model can say "no Samsung, but we have Xiaomi and Apple" truthfully.
-* Any price the model writes next to a currency word must exist in real data (or be the customer's own number).
-* **Every reply is validated before a customer sees it** (`guards.reply_problem`): internal wording (errors, 429, JSON, `<think>`, "Oops"),
-  foreign scripts, garbled mixed-script words, fragment/ellipsis spam and repetition are rejected. The model gets ONE clean retry (never while
-  rate-limited); if that also fails, a safe fixed message is shown instead.
+> 🔒 **Never commit your `.env` file or paste API keys into source files.**
 
-## Matching words to products (general, not per product type)
+---
 
-* The same small Arabic stemmer is applied to the customer's words and to every product/category word (article and plural/feminine endings:
-  الموبايلات / موبايلات / موبايل, شفرات / شفرة), plus a fuzzy match for long words (تيشيرت ~ تيشرت). No dictionary of products or slang.
-* Category paths are part of the matched text, so a product whose own name lacks the category word is still found through its category.
-* If strict matching finds nothing, the tool returns `near_matches` (weaker partial matches that still pass category/brand/budget filters)
-  for the model to judge, instead of a bare "nothing".
-* Known limit: broken plurals (الأجهزة vs جهاز) cannot be reduced by rules; the prompt makes the model search several phrasings.
+## ✦ Run the Tests
 
-## Keeping the catalogue answer complete
+```bash
+pytest
+```
 
-* The cached snapshot is a convenience, not the truth. Whenever the model narrows to a category, that category is **also read live**
-  (`/api/subcategory/{id}/products`) and any product the snapshot lacks is added if it fits the request, so a stale or partly downloaded
-  snapshot cannot hide a product (the "only one Android phone, nothing under 5000" case).
-* Pages that fail to download are retried gently, tracked (`Catalog.missing`) and re-fetched alone; the TIX client retries 429/5xx
-  (honouring `Retry-After`) instead of dropping the page.
-* When a category filter excluded matches, the tool says so (`outside_category`), and the prompt forbids "that's all we have" claims without it.
-* The terminal log shows each search's stages, e.g. `matched=…, after_category=…, after_budget=…, live-added=1`.
+---
 
-## When Groq is limited or down
+## ✦ Deploy to Streamlit Cloud
 
-* A **429 is not a failure**. The limited model goes on cooldown (from `Retry-After`, the "try again in 7.2s" hint, or a default; a daily quota
-  gets a long cooldown) and the next configured model, which has its own rate-limit bucket, is tried **immediately**. If every model is cooling:
-  a short wait (`LLM_MAX_WAIT`, jittered, once) or, if longer, no request at all: the customer message is answered locally.
-* Cooldowns persist across messages, so the next message does not spend a request on a model known to be limited. A model that answers 404 is
-  marked dead for the process (and the configured list is checked once against `GET /models`).
-* **Valid results survive.** If a search succeeded and the LLM then fails or returns garbage, the products found are shown with "لقيتلك دول 👇"
-  when the search was unambiguous (one category, or narrowed by the model). If the matches spanned several categories, nothing is guessed:
-  the customer gets a short "please clarify / try again" message.
-* The customer never sees provider errors, JSON, stack traces or `<think>` text.
+```
+1. Push the repo to GitHub
+2. Go to share.streamlit.io
+3. Connect the repo → main file: app.py → Deploy
+4. In app Settings → Secrets, add GROQ_API_KEY
+```
 
-## Configuration (`.env` / environment)
+---
 
-`GROQ_API_KEY` (required), `GROQ_MODEL` (comma-separated, tried in order; default `openai/gpt-oss-120b,openai/gpt-oss-20b`; Groq retires
-models: run `python chat_cli.py --check-llm` to see what your key can use), `TIX_BASE_URL`, `TIX_SITE_URL` (product links), `TIX_MEDIA_BASE` (prefix for relative
-image/video paths), `CATALOG_TTL`, `AGENT_MAX_STEPS`, `HISTORY_MESSAGES`, `LLM_MAX_WAIT`, `LLM_DEFAULT_COOLDOWN`. All defaults live in `config.py`.
+## ✦ Roadmap
 
-## Known limits (see also the delivery report)
+- [ ] Cart & checkout through the TIX API (with customer sign-in and confirmation before every action)
+- [ ] Customer memory: favorites and past orders
+- [ ] Offers & coupons surfaced proactively in recommendations
+- [ ] Voice input for Egyptian Arabic
+- [ ] WhatsApp channel
 
-* The tests prove orchestration, filtering, state, call counts and failure handling with a **scripted** model and a **simulated** Groq; they cannot
-  measure Arabic understanding or real rate-limit headers. Run `chat_cli.py --script scenarios.txt` with your key to judge real conversations.
-* Image/video field *shapes* are unverified (`docs/api_notes.md`): confirm with `python chat_cli.py --raw-media <id>`.
-* In-stock status relies on `quantity` from the product-details endpoint; search results do not carry it.
-* No cart / checkout / order tracking (out of scope).
+---
+
+## ✦ Troubleshooting
+
+| Problem | Likely cause | Fix |
+|:--------|:-------------|:----|
+| `GROQ_API_KEY not found` | `.env` missing or empty | Create `.env` and add your key |
+| Slow replies or `429` errors | Groq free-tier rate limit | Wait a few seconds and retry, or switch to a lighter model in `config.py` |
+| "Product not found" for a brand you expect | The item isn't in the live catalog right now | The catalog changes constantly; this is expected behavior, not a bug |
+| `ModuleNotFoundError` on launch | Virtual env not activated | Re-activate `venv`, then run `pip install -r requirements.txt` |
+
+---
+
+<div align="center">
+
+Built by **[Morad Elnahla](https://github.com/morad-elnahla)**
+
+*TIX Agent — قوله عايز إيه وميزانيتك كام، وهو يرشحلك من المتجر لايف.* 🛍️
+
+</div>
