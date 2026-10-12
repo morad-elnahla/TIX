@@ -149,7 +149,7 @@ def render_chat(agent) -> None:
                         st.button(text, key=f"chip_{icon}", on_click=_queue_prompt, args=(text,))
         for i, m in enumerate(sess.messages):
             st.markdown(_message_html(m), unsafe_allow_html=True)
-            if not prompt:  # small "reply" action under each bubble, on the bubble's side
+            if True:  # small "reply" action under each bubble, on the bubble's side
                 hit = _REPLY_RE.match(m["content"])
                 side = "u" if m["role"] == "user" else "a"
                 st.button("↩ رد", key=f"reply_{side}_{i}", on_click=_set_reply,
@@ -172,3 +172,4 @@ def render_chat(agent) -> None:
                 slot.markdown(_bubble("assistant", shown + "▍"), unsafe_allow_html=True)
                 time.sleep(0.02)
             slot.markdown(_message_html(last), unsafe_allow_html=True)
+            st.rerun()  # redraw once so the new messages get their "reply" buttons
