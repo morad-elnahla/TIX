@@ -234,6 +234,18 @@ def test_corrupted_reply_after_an_ambiguous_search_asks_instead_of_guessing():
     assert "products" not in sess.messages[-1] and "توضحلي" in out
 
 
+def test_no_result_claim_after_a_successful_budget_search_is_rejected_and_cards_survive():
+    contradictory = "مع الأسف مفيش موبايل شاومي بسعر أقل من 5000 جنيه في المتجر دلوقتي."
+    client = FakeClient(CATALOG + [prod(41, "Xiaomi Redmi A5", 4500, "Xiaomi", PHONES, ELEC)])
+    agent, _, _, sess = make(
+        call("search_products", queries=["موبايل", "phone"], category="موبايلات", brand="Xiaomi", max_price=5000),
+        say(contradictory), say(contradictory), client=client,
+    )
+    out = agent.run("زوّد الميزانية لـ5000 وخليك في شاومي", sess)
+    assert out == "لقيتلك دول 👇"
+    assert ids(sess) == [41]
+
+
 def test_no_correction_attempt_while_the_provider_is_rate_limited():
     class Cooling(ScriptedLLM):
         def cooling(self):

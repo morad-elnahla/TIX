@@ -84,7 +84,9 @@ class SalesAgent:
                 continue
             ids, text = guards.extract_show(reply["content"])
             bad_prices = guards.unverified_prices(text, self._allowed_prices(session, user_text))
-            problem = guards.reply_problem(text) or (f"price {bad_prices}" if bad_prices else None)
+            problem = (guards.reply_problem(text)
+                       or self._contradictory_no_result(text, session)
+                       or (f"price {bad_prices}" if bad_prices else None))
             if problem:
                 log.warning("reply rejected (%s): %.80r", problem, reply["content"])
                 if corrected or getattr(self.llm, "cooling", lambda: 0)() > 0:
@@ -92,7 +94,7 @@ class SalesAgent:
                 corrected = True
                 note = ("[system] Your last reply could not be shown to the customer. Answer again in one or two clear, natural sentences"
                         + (f", using only real prices from the tool results (not {', '.join(f'{b:g}' for b in bad_prices)})."
-                           if bad_prices else "."))
+                           if bad_prices else ", and do not say that no products were found when the latest search returned products." if problem == "contradicts tool results" else "."))
                 messages.append({"role": "user", "content": note})
                 continue
             self._show(ids, session)
@@ -143,3 +145,22 @@ class SalesAgent:
             if p.price and p.price_before and p.price_before > p.price:
                 allowed.add(p.price_before - p.price)
         return allowed
+
+    @staticmethod
+    def _contradictory_no_result(text: str, session: Session) -> str | None:
+        """Reject a no-results claim when this turn's tool search returned products.
+
+        This prevents a real product under the budget from being followed by a false
+        "nothing exists under that budget" response. The check is limited to the current
+        turn because a later customer message may legitimately change the request.
+        """
+        if not (session.found and session.found[0]):
+            return None
+        normalized = guards.normalize(text)
+        no_result = re.search(
+            r"(?:مفيش|لا يوجد|مش موجود|غير موجود|nothing\s+(?:available|found)|"
+            r"no\s+(?:\w+\s+)?(?:products?|phones?|matches?|items?)|couldn['’]?t\s+find)",
+            normalized,
+            re.IGNORECASE,
+        )
+        return "contradicts tool results" if no_result else None
