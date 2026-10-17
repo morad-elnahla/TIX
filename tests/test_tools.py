@@ -3,7 +3,7 @@ import pytest
 
 from agent.state import Session
 from agent.tools import TixTools
-from tests.fakes import CATALOG, ELEC, PHONES, FakeClient, prod
+from tests.fakes import CATALOG, ELEC, PHONES, FakeClient, page, prod
 
 
 @pytest.fixture
@@ -45,6 +45,27 @@ def test_mobile_intent_excludes_a_xiaomi_band_from_a_phone_search():
     r = TixTools(FakeClient(CATALOG + [band, phone])).run(
         "search_products", {"queries": ["xiaomi"], "max_price": 5000}, sess
     )
+    assert [p["id"] for p in r["products"]] == [42]
+
+
+def test_mobile_budget_search_recovers_from_a_stale_snapshot_via_price_filter():
+    band = prod(41, "Xiaomi Smart Band 9", 2700, "Xiaomi", (91, "ساعات"), (10, "إكسسوارات"))
+    phone = prod(42, "Xiaomi Redmi A5", 4500, "Xiaomi", PHONES, ELEC)
+
+    class SearchMiss(FakeClient):
+        def __init__(self):
+            super().__init__(CATALOG + [band])
+
+        def search(self, q):
+            self._chk("search", q, search=True)
+            return page([])
+
+        def filter(self, page_no=1, **params):
+            self._chk("filter", params)
+            return page(self.catalog + [phone])
+
+    sess = Session(user_text="عايز موبايل شاومي تحت ال 5 الاف جنيه")
+    r = TixTools(SearchMiss()).run("search_products", {"queries": ["xiaomi"], "max_price": 5000}, sess)
     assert [p["id"] for p in r["products"]] == [42]
 
 

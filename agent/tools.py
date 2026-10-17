@@ -203,6 +203,28 @@ class TixTools:
                 else:
                     outside[p.path or "—"] = outside.get(p.path or "—", 0) + 1
             items = kept
+        # A stale/incomplete snapshot or a weak live search can miss an in-budget item.
+        # Only when the strict result is empty, retry through the store's price filter
+        # and apply the same category/brand checks below; this avoids showing accessories.
+        if not items and category and (lo is not None or hi is not None):
+            fallback, fallback_ok = self._browse_without_snapshot(lo, hi)
+            if fallback_ok:
+                for p in fallback:
+                    if paths and not (p.path in paths or (bool(p.path) and not p.subsubcategory
+                                                           and any(q.startswith(p.path + " > ") for q in paths))):
+                        continue
+                    sc = self.catalog.score(queries, p) if queries and cat_ok else (0.6 if queries else 1.0)
+                    if queries and sc < MIN_SCORE:
+                        continue
+                    scored.setdefault(Catalog._key(p), (sc, p))
+                items = [(sc, p) for sc, p in scored.values()
+                         if p in guards.hide_test_products([p], s.user_text)
+                         and (not paths or p.path in paths or (bool(p.path) and not p.subsubcategory
+                                                               and any(q.startswith(p.path + " > ") for q in paths)))
+                         and (not brand or guards.brand_matches(p, brand))
+                         and guards.within_budget(p, lo, hi)]
+                if items:
+                    log.info("search fallback recovered %d products from price filter", len(items))
         stages["after_category"] = len(items)
         if disc:
             items = [(sc, p) for sc, p in items if p.has_discount]
