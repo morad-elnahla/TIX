@@ -34,8 +34,8 @@ LIVE_CATEGORY_TTL = int(os.getenv("LIVE_CATEGORY_TTL", "60"))  # seconds a live 
 ASSISTANT_SIDE = "left" if os.getenv("ASSISTANT_SIDE", "right").strip().lower() == "left" else "right"  # screen edge of the floating assistant
 
 # ---- Agent ---------------------------------------------------------------
-MAX_STEPS = int(os.getenv("AGENT_MAX_STEPS", "4"))  # tool-calling rounds per customer message (a normal product request uses 1)
-HISTORY_MESSAGES = int(os.getenv("HISTORY_MESSAGES", "14"))  # recent chat messages sent to the LLM
+MAX_STEPS = int(os.getenv("AGENT_MAX_STEPS", "2"))  # keep the normal search -> answer flow fast; still allows one refinement
+HISTORY_MESSAGES = int(os.getenv("HISTORY_MESSAGES", "10"))  # recent chat messages sent to the LLM
 SEARCH_LIMIT = int(os.getenv("SEARCH_LIMIT", "8"))  # products returned to the LLM per search
 MAX_CARDS = int(os.getenv("MAX_CARDS", "5"))  # product cards shown to the customer per answer
 TOOL_RESULT_CHARS = int(os.getenv("TOOL_RESULT_CHARS", "5000"))  # hard cap on one tool result sent to the LLM
@@ -45,13 +45,13 @@ TOOL_RESULT_CHARS = int(os.getenv("TOOL_RESULT_CHARS", "5000"))  # hard cap on o
 # so the second one is a real fallback). Groq retires/renames models: verify with `python chat_cli.py --check-llm`.
 GROQ_BASE_URL = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
 GROQ_MODELS = [m.strip() for m in os.getenv("GROQ_MODEL", "openai/gpt-oss-120b,openai/gpt-oss-20b").split(",") if m.strip()]
-LLM_TIMEOUT = float(os.getenv("LLM_TIMEOUT", "30"))
-LLM_RETRIES = int(os.getenv("LLM_RETRIES", "1"))  # extra attempts on the SAME model for 5xx/empty/malformed output (never for 429)
+LLM_TIMEOUT = float(os.getenv("LLM_TIMEOUT", "20"))
+LLM_RETRIES = int(os.getenv("LLM_RETRIES", "0"))  # fail fast; a later customer message can retry without blocking this one
 LLM_MAX_WAIT = float(os.getenv("LLM_MAX_WAIT", "6"))  # longest we will pause inside one customer turn waiting for a rate limit
 LLM_DEFAULT_COOLDOWN = float(os.getenv("LLM_DEFAULT_COOLDOWN", "10"))  # when a 429 says nothing about when to retry
 LLM_DAILY_COOLDOWN = float(os.getenv("LLM_DAILY_COOLDOWN", "900"))  # a daily quota will not recover in seconds
 LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.2"))
-LLM_MAX_TOKENS = int(os.getenv("LLM_MAX_TOKENS", "1200"))  # reasoning models spend part of this on hidden reasoning
+LLM_MAX_TOKENS = int(os.getenv("LLM_MAX_TOKENS", "800"))  # enough for a short shopping reply; reasoning models spend part on hidden reasoning
 REASONING_EFFORT = os.getenv("REASONING_EFFORT", "low")  # only sent to gpt-oss models
 
 def get_groq_key() -> str:
