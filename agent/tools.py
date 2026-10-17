@@ -206,7 +206,9 @@ class TixTools:
         # A stale/incomplete snapshot or a weak live search can miss an in-budget item.
         # Only when the strict result is empty, retry through the store's price filter
         # and apply the same category/brand checks below; this avoids showing accessories.
-        if not items and category and (lo is not None or hi is not None):
+        eligible_now = [(sc, p) for sc, p in items
+                        if (not brand or guards.brand_matches(p, brand)) and guards.within_budget(p, lo, hi)]
+        if not eligible_now and category and (lo is not None or hi is not None):
             fallback, fallback_ok = self._browse_without_snapshot(lo, hi)
             if fallback_ok:
                 for p in fallback:
@@ -225,6 +227,24 @@ class TixTools:
                          and guards.within_budget(p, lo, hi)]
                 if items:
                     log.info("search fallback recovered %d products from price filter", len(items))
+        eligible_now = [(sc, p) for sc, p in items
+                        if (not brand or guards.brand_matches(p, brand)) and guards.within_budget(p, lo, hi)]
+        if not eligible_now and category and paths and s.seen:
+            # The customer may already have seen a valid product earlier in this
+            # conversation. Never turn that confirmed product into "not found"
+            # just because a later live request or stale snapshot missed it.
+            recovered = []
+            for p in s.seen.values():
+                in_category = p.path in paths or (bool(p.path) and not p.subsubcategory
+                                                  and any(q.startswith(p.path + " > ") for q in paths))
+                matches_words = not queries or self.catalog.score(queries, p) >= MIN_SCORE
+                if (in_category and matches_words and p in guards.hide_test_products([p], s.user_text)
+                        and (not brand or guards.brand_matches(p, brand)) and guards.within_budget(p, lo, hi)):
+                    recovered.append(p)
+            if recovered:
+                items = [(1.0, p) for p in recovered]
+                s.remember(recovered)
+                log.info("search recovered %d products already confirmed in this session", len(recovered))
         stages["after_category"] = len(items)
         if disc:
             items = [(sc, p) for sc, p in items if p.has_discount]

@@ -4,6 +4,7 @@ import pytest
 from agent.state import Session
 from agent.tools import TixTools
 from tests.fakes import CATALOG, ELEC, PHONES, FakeClient, page, prod
+from tix.schemas import Product
 
 
 @pytest.fixture
@@ -66,6 +67,16 @@ def test_mobile_budget_search_recovers_from_a_stale_snapshot_via_price_filter():
 
     sess = Session(user_text="عايز موبايل شاومي تحت ال 5 الاف جنيه")
     r = TixTools(SearchMiss()).run("search_products", {"queries": ["xiaomi"], "max_price": 5000}, sess)
+    assert [p["id"] for p in r["products"]] == [42]
+
+
+def test_mobile_budget_search_keeps_a_phone_already_seen_in_this_session():
+    phone = prod(42, "Xiaomi Redmi A5", 4500, "Xiaomi", PHONES, ELEC)
+    sess = Session(user_text="عايز موبايل شاومي تحت ال 5 الاف جنيه")
+    sess.remember([Product.from_raw(phone)])
+    r = TixTools(FakeClient(CATALOG)).run(
+        "search_products", {"queries": ["xiaomi"], "max_price": 5000}, sess
+    )
     assert [p["id"] for p in r["products"]] == [42]
 
 
