@@ -3,7 +3,7 @@ import pytest
 
 from agent.state import Session
 from agent.tools import TixTools
-from tests.fakes import FakeClient
+from tests.fakes import CATALOG, ELEC, PHONES, FakeClient, prod
 
 
 @pytest.fixture
@@ -36,6 +36,16 @@ def test_budget_is_enforced_in_code_and_sorts_cheapest_first(tools, sess):
     r = tools.run("search_products", {"queries": ["iphone", "آيفون"], "max_price": "15,000", "sort": "price_low"}, sess)
     assert names(r) == ["iPhone 11 64GB", "iPhone 12 128GB"] and all(p["price"] <= 15000 for p in r["products"])
     assert r["products"][1]["was"] == 16500
+
+
+def test_mobile_intent_excludes_a_xiaomi_band_from_a_phone_search():
+    band = prod(41, "Xiaomi Smart Band 9", 2700, "Xiaomi", (91, "ساعات"), (10, "إكسسوارات"))
+    phone = prod(42, "Xiaomi Redmi A5", 4500, "Xiaomi", PHONES, ELEC)
+    sess = Session(user_text="عايز موبايل شاومي تحت ال 5 الاف جنيه")
+    r = TixTools(FakeClient(CATALOG + [band, phone])).run(
+        "search_products", {"queries": ["xiaomi"], "max_price": 5000}, sess
+    )
+    assert [p["id"] for p in r["products"]] == [42]
 
 
 def test_no_match_inside_budget_reports_real_price_range(tools, sess):

@@ -20,6 +20,9 @@ log = logging.getLogger("tix.tools")
 
 MIN_SCORE = 0.5  # a candidate must match at least half of a query's words
 
+_MOBILE_INTENT = ("موبايل", "phone", "smartphone")
+_MOBILE_ACCESSORY = ("شاحن", "charger", "جراب", "كفر", "case", "سماعه", "سماعة", "headphone", "earbud", "سوار", "band")
+
 SCHEMAS = [
     {"type": "function", "function": {
         "name": "search_products",
@@ -123,6 +126,8 @@ class TixTools:
         if not queries and isinstance(a.get("query"), str) and a["query"].strip():  # tolerate a singular `query`
             queries = [a["query"].strip()]
         category, brand = str(a.get("category") or "").strip(), str(a.get("brand") or "").strip()
+        if not category:
+            category = self._infer_category(s.user_text)
         lo, hi = guards.to_number(a.get("min_price")), guards.to_number(a.get("max_price"))
         sort = a.get("sort") if a.get("sort") in ("price_low", "price_high", "newest") else None
         disc = bool(a.get("only_discounted"))
@@ -307,6 +312,22 @@ class TixTools:
                 if groups[k]:
                     out.append(groups[k].pop(0))
         return out
+
+    @staticmethod
+    def _infer_category(user_text: str) -> str:
+        """Turn an explicit mobile-shopping intent into a category constraint.
+
+        The model may search for the brand only (e.g. ``xiaomi``), which otherwise
+        lets watches and fitness bands pass the brand and budget filters. This is
+        deliberately narrow: it only infers phones, and leaves other categories to
+        the model's tool arguments.
+        """
+        text = guards.normalize(user_text)
+        if not any(word in text for word in _MOBILE_INTENT):
+            return ""
+        if any(word in text for word in _MOBILE_ACCESSORY):
+            return ""
+        return "موبايلات"
 
     def _live_category_products(self, paths: set[str]) -> list[Product]:
         """Live listing (GET /api/subcategory/{id}/products) of the subcategories behind `paths`. Missing names are filled from
